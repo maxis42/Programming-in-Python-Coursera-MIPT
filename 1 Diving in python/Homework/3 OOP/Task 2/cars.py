@@ -1,6 +1,5 @@
 import os
 import csv
-import sys
 
 
 class CarBase:
@@ -74,13 +73,35 @@ def get_car_list(csv_f):
         reader = csv.reader(csv_fd, delimiter=';')
         next(reader)
         for row in reader:
-            print(row)
+            if len(row) < 7:
+                continue
+
+            type = row[0]
+            brand = row[1]
+            if row[2]:
+                passenger_seats_cnt = int(row[2])
+            photo_f = row[3]
+            if row[4]:
+                body_whl = row[4]
+            carrying = float(row[5])
+            if row[6]:
+                extra = row[6]
+
+            if type == "car":
+                car = Car(brand, photo_f, carrying, passenger_seats_cnt)
+            elif type == "truck":
+                car = Truck(brand, photo_f, carrying, body_whl)
+            elif type == "spec_machine":
+                car = SpecMachine(brand, photo_f, carrying, extra)
+            else:
+                raise ValueError(f"Unknown car type: {type}")
+
+            car_list.append(car)
 
     return car_list
 
 
 if __name__ == '__main__':
-    # csv_filename = sys.argv[1]
     csv_filename = "coursera_week3_cars.csv"
 
     cars = get_car_list(csv_filename)
