@@ -8,45 +8,30 @@ class Client:
         self.host = host
         self.port = port
         self.timeout = timeout  # seconds
+
         self.sock = self._sock
 
     @property
     def _sock(self):
         socket.setdefaulttimeout(self.timeout)
-        # sock = socket.socket()
-        # sock.connect((self.host, self.port))
         sock = socket.create_connection((self.host, self.port), self.timeout)
-        # sock.settimeout(self.timeout)
-        # sock.listen(1)
-        # sock.listen(socket.SOMAXCONN)
         return sock
 
     def get(self, metric_type):
-        query = " ".join(["get", metric_type])
-        query += "\n"
-
+        query = f"get {metric_type}\n"
         self.sock.sendall(query.encode("utf-8"))
         status, data = self._get_response()
 
-        if status == "error":
-            raise ClientError()
-
-        metrics_data = self._parse_get_data(data)
+        metrics_data = self._parse_data(data)
         return metrics_data
 
     def put(self, metric_type, metric_value, timestamp=None):
         if timestamp is None:
             timestamp = int(time.time())
 
-        query = " ".join(["put", str(metric_type), str(metric_value),
-                          str(timestamp)])
-        query += "\n"
-
+        query = f"put {metric_type} {metric_value} {timestamp}\n"
         self.sock.sendall(query.encode("utf-8"))
         status, data = self._get_response()
-
-        if status == "error":
-            raise ClientError()
 
     def __del__(self):
         self.sock.close()
@@ -61,41 +46,33 @@ class Client:
         return status, data
 
     @staticmethod
-    def _check_response(s):
-        data = s.split("\n")
+    def _check_response(response):
+        if (response[-1] != "\n") or (response[-2] != "\n"):
+            raise ClientError()
+
+        data = response.split("\n")
         status = data[0]
-        if status not in {"ok", "error"}:
-            raise ClientError()
-
-        if (data[-1] != "") or (data[-2] != ""):
-            raise ClientError()
-
         content = data[1:-2]
 
-        if (status == "error") and (content != "wrong command"):
+        if status != "ok":
             raise ClientError()
 
         for metric in content:
             metric_data = metric.split(" ")
+
             if len(metric_data) != 3:
                 raise ClientError()
 
             metric_type, metric_value, timestamp = metric_data
 
-            if re.fullmatch("\w+\.\w+", metric_type) is None:
-                raise ClientError()
-
-            if re.fullmatch("[-+]?\d*\.\d+|\d+", metric_value) is None:
-                raise ClientError()
-
-            if re.fullmatch("\d+", timestamp) is None:
-                raise ClientError()
-
-    # @staticmethod
-    # def fullmatch(regex, string, flags=0):
-    # PYTHON 2
-    #     """Emulate python-3.4 re.fullmatch()."""
-    #     return re.match("(?:" + regex + r")\Z", string, flags=flags)
+            # if re.fullmatch("\w+\.\w+", metric_type) is None:
+            #     raise ClientError()
+            #
+            # if re.fullmatch("[-+]?\d*\.\d+|\d+", metric_value) is None:
+            #     raise ClientError()
+            #
+            # if re.fullmatch("\d+", timestamp) is None:
+            #     raise ClientError()
 
     @staticmethod
     def recvall(sock):
@@ -110,7 +87,7 @@ class Client:
         return data
 
     @staticmethod
-    def _parse_get_data(data):
+    def _parse_data(data):
         data = iter(data)
         data = zip(data, data, data)
 
@@ -131,6 +108,9 @@ class Client:
 
 
 class ClientError(Exception):
+    """
+    Client error exception class.
+    """
     pass
 
 
