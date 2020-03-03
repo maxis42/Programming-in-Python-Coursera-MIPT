@@ -68,6 +68,8 @@ class Client:
                 key, value, timestamp = row.split()
                 if key not in data:
                     data[key] = []
+
+                # print(f"key={key}; timestamp={timestamp}; value={value}")
                 bisect.insort(data[key], ((int(timestamp), float(value))))
 
         except Exception as err:

@@ -9,16 +9,18 @@
 запускаете этот скрипт.
 """
 import sys
-from .client_solution import Client, ClientError
+from client_solution import Client, ClientError
 
 
 def run(host, port):
     client1 = Client(host, port, timeout=5)
     client2 = Client(host, port, timeout=5)
     command = "wrong command test\n"
+    # self._send(f"get {key}\n".encode())
 
     try:
         data = client1.get(command)
+        print(data.decode())
     except ClientError:
         pass
     except BaseException as err:
@@ -30,6 +32,7 @@ def run(host, port):
         sys.exit(1)
 
     command = 'some_key'
+    # command = "\n"
     data_1 = data_2 = ""
     try:
         data_1 = client1.get(command)
@@ -68,6 +71,7 @@ def run(host, port):
 
     try:
         client1.put("k1", 0.25, timestamp=1)
+        # client1.put("\n", "", "")
         client2.put("k1", 2.156, timestamp=2)
         client1.put("k1", 0.35, timestamp=3)
         client2.put("k2", 30, timestamp=4)
@@ -124,4 +128,4 @@ def run(host, port):
 
 
 if __name__ == "__main__":
-    run("127.0.0.1", 8888)
+    run("127.0.0.1", 10010)
