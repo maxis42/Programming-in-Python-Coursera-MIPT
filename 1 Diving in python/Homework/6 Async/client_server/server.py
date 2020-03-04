@@ -23,7 +23,6 @@ class Server(asyncio.Protocol):
             elif cmd == "put":
                 response = self.put_metrics(data)
 
-        print("response", response)
         self.transport.write(response.encode())
 
     @staticmethod
@@ -113,6 +112,7 @@ def run_server(host, port):
     loop = asyncio.get_event_loop()
     coro = loop.create_server(Server, host, port)
     server = loop.run_until_complete(coro)
+
     try:
         loop.run_forever()
     except KeyboardInterrupt:
