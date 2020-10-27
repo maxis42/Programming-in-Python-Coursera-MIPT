@@ -1,2 +1,2 @@
-# Programming-in-python-Coursera-MIPT
-Python Coursera Specialization from MIPT and Mail.ru
+## Python Coursera Specialization from MIPT and Mail.ru
+https://www.coursera.org/specializations/programming-in-python
